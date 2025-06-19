@@ -14,6 +14,7 @@ typedef struct multidev_el_s
 
     dev_t dev_id;
     struct block_device* blk_dev;
+    struct bdev_handle* blk_handle;
 
 }multidev_el_t;
 

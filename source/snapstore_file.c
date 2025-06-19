@@ -18,7 +18,7 @@ int snapstore_file_create( dev_t dev_id, snapstore_file_t** pfile )
     if (file == NULL)
         return -ENOMEM;
 
-    res = blk_dev_open( dev_id, &file->blk_dev );
+    res = blk_dev_open( dev_id, &file->blk_dev, &file->blk_dev_handle );
     if (res != SUCCESS){
         dbg_kfree( file );
         log_err_format( "Unable to create snapstore file: failed to open device [%d:%d]. errno=", MAJOR( dev_id ), MINOR( dev_id ), res );
@@ -43,9 +43,10 @@ void snapstore_file_destroy( snapstore_file_t* file )
     if (file){
         blk_descr_file_pool_done( &file->pool );
 
-        if (file->blk_dev != NULL){
-            blk_dev_close( file->blk_dev );
+        if (file->blk_dev_handle != NULL){
+            blk_dev_close( file->blk_dev_handle );
             file->blk_dev = NULL;
+            file->blk_dev_handle = NULL;
         }
 
         dbg_kfree(file);

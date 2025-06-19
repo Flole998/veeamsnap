@@ -24,6 +24,7 @@ typedef struct cbt_storage_page_s
 typedef struct cbt_storage_accessor_s
 {
     struct block_device* device;
+    struct bdev_handle* device_handle;
     rangevector_t* rangevector;
 
     struct page* pg;

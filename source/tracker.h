@@ -14,6 +14,7 @@ typedef struct tracker_s
     dev_t original_dev_id;
 
     struct block_device* target_dev;
+    struct bdev_handle* target_dev_handle;
     tracker_disk_t* tr_disk;
 
     cbt_map_t* cbt_map;

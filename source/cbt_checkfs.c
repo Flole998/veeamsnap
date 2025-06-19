@@ -134,6 +134,7 @@ int cbt_checkfs_start_tracker_available(dev_t dev_id, uint32_t check_parameters_
 {
     int res = ENODEV;
     struct block_device* blk_dev = NULL;
+    struct bdev_handle* blk_handle = NULL;
 
     log_tr_dev_t("Check tracking configuration for device ", dev_id);
 
@@ -142,7 +143,7 @@ int cbt_checkfs_start_tracker_available(dev_t dev_id, uint32_t check_parameters_
         return -EINVAL;
     }
 
-    res = blk_dev_open(dev_id, &blk_dev);
+    res = blk_dev_open(dev_id, &blk_dev, &blk_handle);
     if (res != SUCCESS){
         log_err_d("Failed to open device. errcode=", res);
         return res;
@@ -178,7 +179,7 @@ int cbt_checkfs_start_tracker_available(dev_t dev_id, uint32_t check_parameters_
             break;
         }
     } while (false);
-    blk_dev_close(blk_dev);
+    blk_dev_close(blk_handle);
 
     if (res != SUCCESS)
         res = EPERM;
@@ -189,10 +190,11 @@ int cbt_checkfs_store_available(dev_t dev_id, uint32_t* p_check_parameters_sz, v
 {
     int res = SUCCESS;
     struct block_device* blk_dev = NULL;
+    struct bdev_handle* blk_handle = NULL;
 
     log_tr_dev_t("Check tracking configuration for device ", dev_id);
 
-    res = blk_dev_open(dev_id, &blk_dev);
+    res = blk_dev_open(dev_id, &blk_dev, &blk_handle);
     if (res != SUCCESS){
         cbt_checkfs_status_set(error_status, dev_id, res, "Failed to open device.");
         log_err_d("Failed to open device. errcode=", res);
@@ -229,7 +231,7 @@ int cbt_checkfs_store_available(dev_t dev_id, uint32_t* p_check_parameters_sz, v
             break;
         }
     } while (false);
-    blk_dev_close(blk_dev);
+    blk_dev_close(blk_handle);
 
     if (res != SUCCESS)
         res = EPERM;

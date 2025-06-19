@@ -10,10 +10,11 @@
 
 const fmode_t fmode = FMODE_READ | FMODE_WRITE;
 
-int blk_dev_open( dev_t dev_id, struct block_device** p_blk_dev )
+int blk_dev_open( dev_t dev_id, struct block_device** p_blk_dev, struct bdev_handle** p_blk_handle )
 {
     int result = SUCCESS;
     struct block_device* blk_dev;
+    struct bdev_handle* blk_handle;
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5,8,0)
     int refCount;
@@ -34,28 +35,34 @@ int blk_dev_open( dev_t dev_id, struct block_device** p_blk_dev )
         result = refCount;
     }
 #else
-    blk_dev = blkdev_get_by_dev(dev_id, fmode,
+    blk_handle = bdev_open_by_dev(dev_id, fmode,
 #if defined(HAVE_BLK_HOLDER_OPS)
         NULL, NULL);
 #else
         NULL);
 #endif
-    if (IS_ERR(blk_dev))
-        result = PTR_ERR(blk_dev);
+    if (IS_ERR(blk_handle))
+        result = PTR_ERR(blk_handle);
 #endif
 
-    if (result == SUCCESS)
-        *p_blk_dev = blk_dev;
+    if (result == SUCCESS) {
+        *p_blk_handle = blk_handle;
+        *p_blk_dev = blk_handle->bdev;
+    }
     return result;
 }
 
-void blk_dev_close( struct block_device* blk_dev )
+void blk_dev_close( struct bdev_handle* blk_dev )
 {
+#if 0
     blkdev_put(blk_dev,
 #if defined(HAVE_BLK_HOLDER_OPS)
         NULL);
 #else
         FMODE_READ);
+#endif
+#else
+    bdev_release(blk_dev);
 #endif
 }
 
@@ -106,8 +113,9 @@ int blk_dev_get_info( dev_t dev_id, blk_dev_info_t* pdev_info )
 {
     int result = SUCCESS;
     struct block_device* blk_dev;
+    struct bdev_handle* blk_handle;
 
-    result = blk_dev_open( dev_id, &blk_dev );
+    result = blk_dev_open( dev_id, &blk_dev,  &blk_handle );
     if (result != SUCCESS){
         log_err_dev_t( "Failed to open device ", dev_id );
         return result;
@@ -117,7 +125,7 @@ int blk_dev_get_info( dev_t dev_id, blk_dev_info_t* pdev_info )
         log_err_dev_t( "Failed to identify block device ", dev_id );
     }
 
-    blk_dev_close( blk_dev );
+    blk_dev_close( blk_handle );
 
     return result;
 }

@@ -126,7 +126,7 @@ int cbt_storage_open(cbt_persistent_parameters_t* params, cbt_storage_accessor_t
     int res = SUCCESS;
     log_tr_dev_t("Open persistent CBT storage device ",params->dev_id);
 
-    res = blk_dev_open(params->dev_id, &accessor->device);
+    res = blk_dev_open(params->dev_id, &accessor->device, &accessor->device_handle);
     if (res != SUCCESS){
         log_err_dev_t("Failed to open device ", params->dev_id);
         return res;
@@ -166,10 +166,11 @@ void cbt_storage_close(cbt_storage_accessor_t* accessor)
         accessor->pg = NULL;
         accessor->page = NULL;
     }
-    if (accessor->device != NULL){
+    if (accessor->device_handle != NULL){
         log_tr("Close persistent CBT storage device ");
 
-        blk_dev_close(accessor->device);
+        blk_dev_close(accessor->device_handle);
+        accessor->device_handle = NULL;
         accessor->device = NULL;
     }
     accessor->rangevector = NULL;

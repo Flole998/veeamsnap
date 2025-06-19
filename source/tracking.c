@@ -314,13 +314,14 @@ int tracking_add(dev_t dev_id, unsigned int cbt_block_size_degree, unsigned long
     else if (-ENODATA == result)
     {
         struct block_device* target_dev = NULL;
+        struct bdev_handle* target_handle = NULL;
         tracker_disk_t* tr_disk = NULL;
 
         do {//check space already under tracking
             sector_t sectStart;
             sector_t sectEnd;
 
-            result = blk_dev_open(dev_id, &target_dev);
+            result = blk_dev_open(dev_id, &target_dev, &target_handle);
             if (result != SUCCESS)
                 break;
 
@@ -353,8 +354,8 @@ int tracking_add(dev_t dev_id, unsigned int cbt_block_size_degree, unsigned long
                 log_err_d("Failed to create tracker. errno=", result);
         } while (false);
 
-        if (target_dev)
-            blk_dev_close(target_dev);
+        if (target_handle)
+            blk_dev_close(target_handle);
     }
     else
         log_err_format( "Unable to add device [%d:%d] under tracking: invalid trackers container. errno=%d",

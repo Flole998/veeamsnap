@@ -7,6 +7,7 @@
 typedef struct snapstore_file_s{
     dev_t blk_dev_id;
     struct block_device*  blk_dev;
+    struct bdev_handle*  blk_dev_handle;
 
     blk_descr_pool_t pool;
 }snapstore_file_t;

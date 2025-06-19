@@ -95,7 +95,7 @@ static int collector_init( snapdata_collector_t* collector, dev_t dev_id, void* 
     collector->fail_code = SUCCESS;
     collector->dev_id = dev_id;
 
-    res = blk_dev_open( collector->dev_id, &collector->device );
+    res = blk_dev_open( collector->dev_id, &collector->device, &collector->device_handle );
     if (res != SUCCESS){
         log_err_format( "Unable to initialize snapstore collector: failed to open device [%d:%d]. errno=%d", MAJOR( collector->dev_id ), MINOR( collector->dev_id ), res );
         return res;
@@ -149,7 +149,7 @@ static int _collector_start(snapdata_collector_t* collector)
     struct super_block* sb = NULL;
     res = blk_freeze_bdev( collector->dev_id, collector->device, &sb);
 #else
-    res = freeze_bdev(collector->device);
+    res = bdev_freeze(collector->device);
 #endif
     if (res)
         return res;
@@ -167,7 +167,7 @@ static int _collector_start(snapdata_collector_t* collector)
 #ifdef VEEAMSNAP_BLK_FREEZE
     sb = blk_thaw_bdev(collector->dev_id, collector->device, sb);
 #else
-    if (thaw_bdev(collector->device) != SUCCESS)
+    if (bdev_thaw(collector->device) != SUCCESS)
         log_err("Failed to thaw block device");
 #endif
 
@@ -187,7 +187,7 @@ static void collector_stop( snapdata_collector_t* collector )
 #ifdef VEEAMSNAP_BLK_FREEZE
     res = blk_freeze_bdev(collector->dev_id, collector->device, &sb);
 #else
-    res = freeze_bdev(collector->device);
+    res = bdev_freeze(collector->device);
 #endif
     if (res != SUCCESS)
         log_err("Failed to treeze block device");
@@ -201,7 +201,7 @@ static void collector_stop( snapdata_collector_t* collector )
 #ifdef VEEAMSNAP_BLK_FREEZE
     sb = blk_thaw_bdev(collector->dev_id, collector->device, sb);
 #else
-    res = thaw_bdev(collector->device);
+    res = bdev_thaw(collector->device);
     if (res != SUCCESS)
         log_err("Failed to thaw block device");
 #endif
@@ -221,9 +221,10 @@ static void collector_free( snapdata_collector_t* collector )
         collector->magic_buff = NULL;
     }
 
-    if (collector->device != NULL){
-        blk_dev_close( collector->device );
+    if (collector->device_handle != NULL){
+        blk_dev_close( collector->device_handle );
         collector->device = NULL;
+        collector->device_handle = NULL;
     }
 
     dbg_kfree(collector);

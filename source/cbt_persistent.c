@@ -641,8 +641,9 @@ int cbt_persistent_load(void)
         {
             cbt_prst_reg_t* current_reg = list_entry(_current_list_head, cbt_prst_reg_t, link);
             struct block_device* blk_dev;
+            struct bdev_handle* blk_handle;
 
-            if (SUCCESS == blk_dev_open(current_reg->dev_id, &blk_dev)){
+            if (SUCCESS == blk_dev_open(current_reg->dev_id, &blk_dev, &blk_handle)){
                 cbt_notify_list_down_read();
                 {
                     cbt_notify_dev_t* dev_note = cbt_notify_dev_find_by_id(current_reg->dev_id);
@@ -676,7 +677,7 @@ int cbt_persistent_load(void)
                 }
                 cbt_notify_list_up_read();
 
-                blk_dev_close(blk_dev);
+                blk_dev_close(blk_handle);
             }
         }
     }
@@ -906,9 +907,9 @@ void cbt_persistent_device_attach(char* dev_name, char* dev_path)
             log_err("Cannot find device by name");
             return;
         }
-        bdev = blkdev_get_by_dev(dev_id, FMODE_READ | FMODE_WRITE,
+        bdev = bdev_open_by_dev(dev_id, FMODE_READ | FMODE_WRITE,
 #if defined(HAVE_BLK_HOLDER_OPS)
-            NULL, NULL);
+            NULL, NULL)->bdev;
 #else
             NULL);
 #endif

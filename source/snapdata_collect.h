@@ -12,6 +12,7 @@ typedef struct snapdata_collector_s
 
     dev_t dev_id;
     struct block_device* device;
+    struct bdev_handle* device_handle;
 
     tracker_disk_t* tr_disk;
 

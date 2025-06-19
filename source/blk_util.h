@@ -18,9 +18,9 @@ typedef struct blk_dev_info_s
 }blk_dev_info_t;
 
 
-int blk_dev_open( dev_t dev_id, struct block_device** p_blk_dev );
+int blk_dev_open( dev_t dev_id, struct block_device** p_blk_dev, struct bdev_handle** p_blk_handle );
 
-void blk_dev_close( struct block_device* blk_dev );
+void blk_dev_close( struct bdev_handle* blk_dev );
 
 
 int blk_dev_get_info( dev_t dev_id, blk_dev_info_t* pdev_info );

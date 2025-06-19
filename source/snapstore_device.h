@@ -26,6 +26,7 @@ typedef struct snapstore_device_s
     snapstore_t* snapstore;
 
     struct block_device* orig_blk_dev;
+    struct bdev_handle* orig_blk_dev_handle;
 
 
     blk_descr_array_t store_block_map; // map block index to read block offset

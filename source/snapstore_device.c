@@ -93,8 +93,8 @@ void _snapstore_device_destroy( snapstore_device_t* snapstore_device )
 
     blk_descr_array_done( &snapstore_device->store_block_map );
 
-    if (snapstore_device->orig_blk_dev != NULL)
-        blk_dev_close( snapstore_device->orig_blk_dev );
+    if (snapstore_device->orig_blk_dev_handle != NULL)
+        blk_dev_close( snapstore_device->orig_blk_dev_handle );
 
 #ifdef SNAPDATA_ZEROED
     rangevector_done( &snapstore_device->zero_sectors );
@@ -139,7 +139,7 @@ int snapstore_device_create( dev_t dev_id, snapstore_t* snapstore )
 
     snapstore_device->dev_id = dev_id;
 
-    res = blk_dev_open( dev_id, &snapstore_device->orig_blk_dev );
+    res = blk_dev_open( dev_id, &snapstore_device->orig_blk_dev, &snapstore_device->orig_blk_dev_handle );
     if (res != SUCCESS){
         log_err_dev_t( "Unable to create snapstore device: failed to open original device ", dev_id );
         return res;

@@ -38,7 +38,7 @@ void snapstore_multidev_destroy( snapstore_multidev_t* multidev )
             while (NULL != (content = container_sl_get_first( &multidev->devicelist )))
             {
                 multidev_el_t* el = (multidev_el_t*)(content);
-                blk_dev_close( el->blk_dev );
+                blk_dev_close( el->blk_handle );
                 log_tr_dev_t( "Close device for multidevice snapstore ", el->dev_id);
                 content_sl_free(content);
             }
@@ -51,6 +51,7 @@ void snapstore_multidev_destroy( snapstore_multidev_t* multidev )
 struct block_device* snapstore_multidev_get_device( snapstore_multidev_t* multidev, dev_t dev_id )
 {
     struct block_device* blk_dev = NULL;
+    struct bdev_handle* blk_handle = NULL;
     content_sl_t* content = NULL;
     CONTAINER_SL_FOREACH_BEGIN( multidev->devicelist, content )
     {
@@ -63,7 +64,7 @@ struct block_device* snapstore_multidev_get_device( snapstore_multidev_t* multid
     }CONTAINER_SL_FOREACH_END( multidev->devicelist );
 
     if (NULL == blk_dev){
-        int res = blk_dev_open( dev_id, &blk_dev );
+        int res = blk_dev_open( dev_id, &blk_dev, &blk_handle );
         if (res != SUCCESS){
             blk_dev = NULL;
             log_err_format( "Unable to add device to snapstore multidevice file: failed to open [%d:%d]. errno=", MAJOR( dev_id ), MINOR( dev_id ), res );
@@ -72,6 +73,7 @@ struct block_device* snapstore_multidev_get_device( snapstore_multidev_t* multid
             multidev_el_t* content = (multidev_el_t*)content_sl_new(&multidev->devicelist);
             content->blk_dev = blk_dev;
             content->dev_id = dev_id;
+            content->blk_handle = blk_handle;
 
             container_sl_push_back(&multidev->devicelist, &content->content);
         }
